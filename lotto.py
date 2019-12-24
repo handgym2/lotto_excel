@@ -51,8 +51,6 @@ def main():
             write_ws['G1'] = "6번째 번호"
 
             wb.save('lotto.xlsx')
-
-
             print('업데이트 완료')
 
     else:
@@ -60,13 +58,12 @@ def main():
 
     
 def dowmload():
-    makefile()
-    new_ball()
-    lastrow()
     print("다운로드 시작합니다.")
     basic_url = "https://www.dhlottery.co.kr/gameResult.do?method=byWin&drwNo=" 
     write_wb = Workbook()
-    for i in range(1,int(keyword[6])+1):
+    mk_sheet = write_wb.active
+    mk_sheet.title = '당첨번호 모음'
+    for i in range(1,5):#int(keyword[6])+1
         resp = requests.get(basic_url + str(i)) 
         soup = BeautifulSoup(resp.text, "lxml") 
         line = str(soup.find("meta", {"id" : "desc", "name" : "description"})['content']) 
@@ -77,36 +74,40 @@ def dowmload():
         numbers = line[begin:end] 
         print("당첨번호" + str(i) +"회" , numbers)
         split_num = re.split('[, +]',numbers)
-        write_ws = write_wb.active
+
         if i == 0:
             pass
         else:
-            write_ws['A'+str(i+1)] = str(i) + "회"
+            mk_sheet['A'+str(i+1)] = str(i) + "회"
 
-            write_ws['B'+str(i+1)] = int(split_num[0])
-            write_ws['C'+str(i+1)] = int(split_num[1])
-            write_ws['D'+str(i+1)] = int(split_num[2])
-            write_ws['E'+str(i+1)] = int(split_num[3])
-            write_ws['F'+str(i+1)] = int(split_num[4])
-            write_ws['G'+str(i+1)] = int(split_num[5])
-            write_ws['H'+str(i+1)] = int(split_num[6])
-    write_ws['H1'] = "추가번호"   
-    write_ws['B1'] = "1번째 번호"
-    write_ws['C1'] = "2번째 번호"
-    write_ws['D1'] = "3번째 번호"
-    write_ws['E1'] = "4번째 번호"
-    write_ws['F1'] = "5번째 번호"
-    write_ws['G1'] = "6번째 번호"
+            mk_sheet['B'+str(i+1)] = int(split_num[0])
+            mk_sheet['C'+str(i+1)] = int(split_num[1])
+            mk_sheet['D'+str(i+1)] = int(split_num[2])
+            mk_sheet['E'+str(i+1)] = int(split_num[3])
+            mk_sheet['F'+str(i+1)] = int(split_num[4])
+            mk_sheet['G'+str(i+1)] = int(split_num[5])
+            mk_sheet['H'+str(i+1)] = int(split_num[6])
+    
+    
+    mk_sheet['H1'] = "추가번호"   
+    mk_sheet['B1'] = "1번째 번호"
+    mk_sheet['C1'] = "2번째 번호"
+    mk_sheet['D1'] = "3번째 번호"
+    mk_sheet['E1'] = "4번째 번호"
+    mk_sheet['F1'] = "5번째 번호"
+    mk_sheet['G1'] = "6번째 번호"
+
+    mk_sheet2 = write_wb.create_sheet()
+    mk_sheet2.title = '데이터 분석'
+    for j in range(1,46):
+        mk_sheet2['A'+str(j+1)] = str(j)
+
+
 
     write_wb.save('lotto.xlsx')
 
     print('다운로드 완료')
 
-
-
-def makefile():
-    write_wb = Workbook()
-    write_wb.save('lotto.xlsx')
 
 def lastrow():
     global last_row
