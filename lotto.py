@@ -5,6 +5,8 @@ import re
 from openpyxl import load_workbook
 import openpyxl
 import os.path
+import pandas as pd
+import numpy as np
 
 def main():
     file = 'lotto.xlsx'
@@ -97,17 +99,21 @@ def dowmload():
     mk_sheet['F1'] = "5번째 번호"
     mk_sheet['G1'] = "6번째 번호"
 
-    mk_sheet2 = write_wb.create_sheet()
-    mk_sheet2.title = '데이터 분석'
-    for j in range(1,46):
-        mk_sheet2['A'+str(j+1)] = str(j)
-
-
 
     write_wb.save('lotto.xlsx')
 
+    sheet2()
     print('다운로드 완료')
 
+def sheet2():
+    load_excel = openpyxl.load_workbook('lotto.xlsx')
+    sheet2 = load_excel.create_sheet()
+    sheet2.title = '데이터 분석'
+    
+    for i in range(1,46):
+        sheet2['A'+str(i+1)] = str(i)
+
+    load_excel.save('lotto.xlsx')
 
 def lastrow():
     global last_row
