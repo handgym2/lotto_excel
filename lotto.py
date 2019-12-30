@@ -7,6 +7,18 @@ import openpyxl
 import os.path
 import pandas as pd
 import numpy as np
+from openpyxl import workbook
+from string import ascii_uppercase
+from openpyxl.styles import Font, Color
+from openpyxl.styles.borders import Border, Side
+
+
+thin_border = Border(left=Side(style='thin'),
+                right=Side(style='thin'), 
+                top=Side(style='thin'), 
+                bottom=Side(style='thin'))
+
+
 
 def main():
     file = 'lotto.xlsx'
@@ -21,7 +33,7 @@ def main():
             row = sheet.max_row
             print(row)
             print('업데이트를 시작합니다.')
-            for j in range(row,int(keyword[6])+1):
+            for j in range(row,20):#int(keyword[6])+1
                 basic_url = "https://www.dhlottery.co.kr/gameResult.do?method=byWin&drwNo=" 
                 resp = requests.get(basic_url + str(j)) 
                 soup = BeautifulSoup(resp.text, "lxml") 
@@ -60,12 +72,13 @@ def main():
 
     
 def dowmload():
+    new_ball()
     print("다운로드 시작합니다.")
     basic_url = "https://www.dhlottery.co.kr/gameResult.do?method=byWin&drwNo=" 
     write_wb = Workbook()
     mk_sheet = write_wb.active
     mk_sheet.title = '당첨번호 모음'
-    for i in range(1,5):#int(keyword[6])+1
+    for i in range(1,3):#int(keyword[6])+1
         resp = requests.get(basic_url + str(i)) 
         soup = BeautifulSoup(resp.text, "lxml") 
         line = str(soup.find("meta", {"id" : "desc", "name" : "description"})['content']) 
@@ -91,13 +104,13 @@ def dowmload():
             mk_sheet['H'+str(i+1)] = int(split_num[6])
     
     
-    mk_sheet['H1'] = "추가번호"   
     mk_sheet['B1'] = "1번째 번호"
     mk_sheet['C1'] = "2번째 번호"
     mk_sheet['D1'] = "3번째 번호"
     mk_sheet['E1'] = "4번째 번호"
     mk_sheet['F1'] = "5번째 번호"
     mk_sheet['G1'] = "6번째 번호"
+    mk_sheet['H1'] = "추가번호"   
 
 
     write_wb.save('lotto.xlsx')
@@ -110,10 +123,44 @@ def sheet2():
     sheet2 = load_excel.create_sheet()
     sheet2.title = '데이터 분석'
     
+    alpha_list = list(ascii_uppercase)
+    print(alpha_list)
+    source = load_excel["당첨번호 모음"]
+    count = 0
+    # for cell in source['A']:
+    #     print(cell).size
     for i in range(1,46):
-        sheet2['A'+str(i+1)] = str(i)
+        sheet2['A'+str(i+2)] = i
+
+    sheet2['B1'] = "1번째 번호 갯수"
+    sheet2['C1'] = "2번째 번호 갯수"
+    sheet2['D1'] = "3번째 번호 갯수"
+    sheet2['E1'] = "4번째 번호 갯수"
+    sheet2['F1'] = "5번째 번호 갯수"
+    sheet2['G1'] = "6번째 번호 갯수"
+    sheet2['H1'] = "보너스 번호 갯수"
+
+    for j in range(1,8):
+
+        cell = sheet2.cell(row=2,column=j+1)
+        cell.value = "=COUNT('당첨번호 모음'!{}:{})".format(alpha_list[j],alpha_list[j])
+        cell.font = Font(bold=10)
+        cell.border = thin_border
+    for n in range(1,8):
+        try:
+            for m in range(1,46):
+                cell = sheet2.cell(row=2+m, column=n+1)
+                cell.value = "=COUNTIF('당첨번호 모음'!{}:{},{})".format(alpha_list[1+count],alpha_list[1+count],m)
+                cell.font = Font(size=10)
+                cell.border = thin_border
+            count += 1
+        except IndexError:
+            pass
+        # cell = sheet2.cell(row=3,column=k+1)
+
 
     load_excel.save('lotto.xlsx')
+        
 
 def lastrow():
     global last_row
