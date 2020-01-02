@@ -9,8 +9,12 @@ import pandas as pd
 import numpy as np
 from openpyxl import workbook
 from string import ascii_uppercase
-from openpyxl.styles import Font, Color
+from openpyxl.styles import Font, Color, colors
 from openpyxl.styles.borders import Border, Side
+from openpyxl.formatting.rule import DataBarRule, Color
+
+
+data_bar_rule = DataBarRule(start_type='percent', start_value=0,end_type='percent',end_value=100,color=colors.RED)
 
 
 thin_border = Border(left=Side(style='thin'),
@@ -18,7 +22,7 @@ thin_border = Border(left=Side(style='thin'),
                 top=Side(style='thin'), 
                 bottom=Side(style='thin'))
 
-
+alpha_list = list(ascii_uppercase)
 
 def main():
     file = 'lotto.xlsx'
@@ -33,7 +37,7 @@ def main():
             row = sheet.max_row
             print(row)
             print('업데이트를 시작합니다.')
-            for j in range(row,20):#int(keyword[6])+1
+            for j in range(row, int(keyword[6])+1): #
                 basic_url = "https://www.dhlottery.co.kr/gameResult.do?method=byWin&drwNo=" 
                 resp = requests.get(basic_url + str(j)) 
                 soup = BeautifulSoup(resp.text, "lxml") 
@@ -47,7 +51,7 @@ def main():
                 split_num = re.split('[, +]',numbers)
                 write_ws = wb.active
                 write_ws['A'+str(j+1)] = str(j) + "회"
-                
+
                 write_ws['B'+str(j+1)] = int(split_num[0])
                 write_ws['C'+str(j+1)] = int(split_num[1])
                 write_ws['D'+str(j+1)] = int(split_num[2])
@@ -55,8 +59,7 @@ def main():
                 write_ws['F'+str(j+1)] = int(split_num[4])
                 write_ws['G'+str(j+1)] = int(split_num[5])
                 write_ws['H'+str(j+1)] = int(split_num[6])
-
-            write_ws['H1'] = "추가번호"   
+            write_ws['H1'] = "추가번호"
             write_ws['B1'] = "1번째 번호"
             write_ws['C1'] = "2번째 번호"
             write_ws['D1'] = "3번째 번호"
@@ -66,11 +69,9 @@ def main():
 
             wb.save('lotto.xlsx')
             print('업데이트 완료')
-
     else:
         dowmload()
 
-    
 def dowmload():
     new_ball()
     print("다운로드 시작합니다.")
@@ -78,7 +79,7 @@ def dowmload():
     write_wb = Workbook()
     mk_sheet = write_wb.active
     mk_sheet.title = '당첨번호 모음'
-    for i in range(1,3):#int(keyword[6])+1
+    for i in range(1,int(keyword[6])+1):#
         resp = requests.get(basic_url + str(i)) 
         soup = BeautifulSoup(resp.text, "lxml") 
         line = str(soup.find("meta", {"id" : "desc", "name" : "description"})['content']) 
@@ -103,7 +104,6 @@ def dowmload():
             mk_sheet['G'+str(i+1)] = int(split_num[5])
             mk_sheet['H'+str(i+1)] = int(split_num[6])
     
-    
     mk_sheet['B1'] = "1번째 번호"
     mk_sheet['C1'] = "2번째 번호"
     mk_sheet['D1'] = "3번째 번호"
@@ -111,7 +111,6 @@ def dowmload():
     mk_sheet['F1'] = "5번째 번호"
     mk_sheet['G1'] = "6번째 번호"
     mk_sheet['H1'] = "추가번호"   
-
 
     write_wb.save('lotto.xlsx')
 
@@ -123,8 +122,7 @@ def sheet2():
     sheet2 = load_excel.create_sheet()
     sheet2.title = '데이터 분석'
     
-    alpha_list = list(ascii_uppercase)
-    print(alpha_list)
+
     source = load_excel["당첨번호 모음"]
     count = 0
     # for cell in source['A']:
@@ -139,37 +137,33 @@ def sheet2():
     sheet2['F1'] = "5번째 번호 갯수"
     sheet2['G1'] = "6번째 번호 갯수"
     sheet2['H1'] = "보너스 번호 갯수"
-
     for j in range(1,8):
-
         cell = sheet2.cell(row=2,column=j+1)
         cell.value = "=COUNT('당첨번호 모음'!{}:{})".format(alpha_list[j],alpha_list[j])
         cell.font = Font(bold=10)
         cell.border = thin_border
+
     for n in range(1,8):
         try:
             for m in range(1,46):
                 cell = sheet2.cell(row=2+m, column=n+1)
-                cell.value = "=COUNTIF('당첨번호 모음'!{}:{},{})".format(alpha_list[1+count],alpha_list[1+count],m)
-                cell.font = Font(size=10)
+                cell.value = "=COUNTIF('당첨번호 모음'!{}:{},{})/{}2".format(alpha_list[1+count],alpha_list[1+count],m,alpha_list[n])
+                cell.font = Font(size=9)
                 cell.border = thin_border
+                cell.number_format = '0.####%'
             count += 1
         except IndexError:
             pass
-        # cell = sheet2.cell(row=3,column=k+1)
 
-
+    sheet2.conditional_formatting.add("B3:H47",data_bar_rule)
     load_excel.save('lotto.xlsx')
         
-
 def lastrow():
     global last_row
     wb = openpyxl.load_workbook('lotto.xlsx')
     sheet = wb.active
     last_row = sheet.max_row
-    # print(last_row-1)
-    # last_col_a_value = sheet.cell(column=2, row=last_row+1).value = "asdasdad"
-    # wb.save('lotto.xlsx')
+
 
 def new_ball():
     global keyword
@@ -178,13 +172,8 @@ def new_ball():
     soup = BeautifulSoup(a.text, "lxml")
     find = soup.find(id="lottoDrwNo")
     keyword = re.split('[< = " >]',str(find))
-    # print(keyword)
-    # for i in range(1,6):
-    #     ball_find = soup.find(class_="ball_645 lrg ball{}".format(i))
-    #     keyword = re.split('[< = " >]',str(ball_find))
-    #     print(keyword[12])
-    # bonus_ball = soup.find(id="bnusNo")
-    # print(bonus_ball)
+
+#1 / 8,145,060
 
 
 if __name__ == "__main__":
