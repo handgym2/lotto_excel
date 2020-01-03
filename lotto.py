@@ -11,10 +11,10 @@ from openpyxl import workbook
 from string import ascii_uppercase
 from openpyxl.styles import Font, Color, colors
 from openpyxl.styles.borders import Border, Side
-from openpyxl.formatting.rule import DataBarRule, Color
+from openpyxl.formatting.rule import DataBarRule
 
 
-data_bar_rule = DataBarRule(start_type='percent', start_value=0,end_type='percent',end_value=100,color=colors.RED)
+data_bar_rule = DataBarRule(start_type='percent', start_value=0.0,end_type='percent',end_value=100.0,color='3CB4FF')
 
 
 thin_border = Border(left=Side(style='thin'),
